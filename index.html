@@ -112,7 +112,8 @@ select{appearance:none;-webkit-appearance:none;padding-right:36px;cursor:pointer
 
 /* tab lain */
 .sc{overflow-x:auto;margin:10px 0;max-width:100%}
-.filters{display:grid;grid-template-columns:minmax(180px,1.5fr) repeat(4,minmax(120px,1fr));gap:8px;margin:0 0 12px}
+.filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.filters input[type=search]{grid-column:1/-1}
 .budget-box{border-top:1px solid var(--ln);margin-top:16px;padding-top:14px}
 .budget-box .row{align-items:center}
 .budget-box .row input{max-width:220px}
@@ -143,7 +144,7 @@ code{background:var(--acbg);color:var(--ink);padding:2px 7px;border-radius:6px;d
 /* tata letak */
 #catat{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:720px){.w{padding:32px 28px 64px}h1{font-size:2rem}.card{padding:22px}nav{width:max-content;grid-template-columns:repeat(4,auto)}nav button{padding:6px 20px;font-size:.95rem}.acts{grid-template-columns:1fr 1fr}.drow{grid-template-columns:1fr 220px auto}}
-@media (min-width:900px){#catat{grid-template-columns:minmax(0,5fr) minmax(0,6fr);grid-template-areas:"form list" "kpi list" "sum list";grid-template-rows:auto auto 1fr;gap:18px 22px;align-items:start}#fm{grid-area:form}#kpi{grid-area:kpi}#smc{grid-area:sum}#lsc{grid-area:list}}
+@media (min-width:900px){#catat{grid-template-columns:minmax(0,4fr) minmax(0,6fr);grid-template-areas:"form list" "kpi list" "sum list";grid-template-rows:auto auto 1fr;gap:18px 22px;align-items:start}#fm{grid-area:form}#kpi{grid-area:kpi}#smc{grid-area:sum}#lsc{grid-area:list;position:sticky;top:16px;max-height:calc(100vh - 32px);display:flex;flex-direction:column;min-height:0}#list{overflow:auto;min-height:180px;padding-right:4px}}
 @media (max-width:700px){.filters{grid-template-columns:1fr 1fr}.filters input[type=search]{grid-column:1/-1}}
 @media (max-width:380px){.kpis b{font-size:1.15rem}.b,.b.s{grid-template-columns:minmax(80px,100px) 1fr auto}.tag{font-size:.86rem}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -181,7 +182,7 @@ code{background:var(--acbg);color:var(--ink);padding:2px 7px;border-radius:6px;d
 </div>
 <div class="kpis" id="kpi"></div>
 <div class="card" id="smc"><div class="ch"><h2>Ringkasan</h2><select id="per" aria-label="Periode" style="width:auto;min-height:38px;font-size:.88rem"><option value="all">Semua</option><option value="month">Bulan ini</option><option value="week">7 hari terakhir</option><option value="day">Hari ini</option></select></div><div id="sum"></div><div class="budget-box"><h2>Anggaran bulan ini</h2><div class="row"><input id="budgetAmount" type="number" min="0" step="1000" placeholder="Contoh: 1500000" aria-label="Anggaran bulanan"><button class="btn g" id="saveBudget" type="button">Simpan</button></div><p class="hint" id="budgetStatus" aria-live="polite">Anggaran disimpan di perangkat ini.</p><div class="budget-track" aria-hidden="true"><i id="budgetBar"></i></div></div></div>
-<div class="card" id="lsc"><div class="ch"><h2>Daftar pengeluaran</h2><button class="btn g" id="exportExcel" type="button">Ekspor Excel</button></div><div class="filters"><input id="searchHistory" type="search" placeholder="Cari catatan, keterangan…" aria-label="Cari pengeluaran"><select id="filterCategory" aria-label="Filter kategori"><option value="">Semua kategori</option></select><select id="filterPayment" aria-label="Filter metode pembayaran"><option value="">Semua metode</option><option>Tunai</option><option>QRIS</option><option>Transfer</option><option>E-wallet</option><option>Debit</option><option>Paylater</option></select><input id="filterFrom" type="date" aria-label="Tanggal mulai"><input id="filterTo" type="date" aria-label="Tanggal akhir"></div><div id="list"></div><p class="hint">Ubah kategori lewat menu kategori, atau pilih Edit untuk mengubah detail catatan.</p></div>
+<div class="card" id="lsc"><div class="ch"><h2>Daftar pengeluaran</h2><div class="row"><select id="listSort" aria-label="Urutan pengeluaran" style="width:auto;min-height:38px;font-size:.88rem"><option value="desc">Terbaru dulu</option><option value="asc">Terlama dulu</option></select><button class="btn g" id="exportExcel" type="button">Ekspor Excel</button></div></div><div class="filters"><input id="searchHistory" type="search" placeholder="Cari catatan, keterangan..." aria-label="Cari pengeluaran"><select id="filterCategory" aria-label="Filter kategori"><option value="">Semua kategori</option></select><select id="filterPayment" aria-label="Filter metode pembayaran"><option value="">Semua metode</option><option>Tunai</option><option>QRIS</option><option>Transfer</option><option>E-wallet</option><option>Debit</option><option>Paylater</option></select><input id="filterFrom" type="date" aria-label="Tanggal mulai"><input id="filterTo" type="date" aria-label="Tanggal akhir"></div><div id="list"></div><p class="hint">Pengeluaran terbaru ditampilkan lebih dulu. Gunakan filter untuk mencari catatan.</p></div>
 </section>
 
 <section id="calc" hidden><div class="card" id="calcbox"></div></section>
@@ -350,7 +351,7 @@ function renderSum(){
     +'<div class="tot"><span>Total</span><span class="mono">'+rp(all_)+'</span></div>';
 }
 function emptyList(){var filtered=$("searchHistory").value||$("filterCategory").value||$("filterPayment").value||$("filterFrom").value||$("filterTo").value;if(filtered)return'<div class="empty"><b>Catatan tidak ditemukan</b>Coba ubah kata pencarian atau filter.</div>';return exps.length?'<div class="empty"><b>Tidak ada catatan di periode ini</b>Ganti periode di bagian Ringkasan untuk melihat catatan lain.</div>':'<div class="empty"><b>Belum ada pengeluaran</b>Tulis pengeluaran pertama di kolom atas.</div>'}
-function filteredView(){var q=$("searchHistory").value.trim().toLocaleLowerCase("id-ID"),cat=$("filterCategory").value,pm=$("filterPayment").value,from=$("filterFrom").value,to=$("filterTo").value;var start=from?new Date(from+"T00:00:00").getTime():0,end=to?new Date(to+"T23:59:59.999").getTime():Infinity;return view().filter(function(e){var t=e.ts||e.id,hay=[e.text,e.note,e.cat,e.pm].join(" ").toLocaleLowerCase("id-ID");return(!q||hay.indexOf(q)!==-1)&&(!cat||e.cat===cat)&&(!pm||e.pm===pm)&&t>=start&&t<=end})}
+function filteredView(){var q=$("searchHistory").value.trim().toLocaleLowerCase("id-ID"),cat=$("filterCategory").value,pm=$("filterPayment").value,from=$("filterFrom").value,to=$("filterTo").value;var start=from?new Date(from+"T00:00:00").getTime():0,end=to?new Date(to+"T23:59:59.999").getTime():Infinity;var result=view().filter(function(e){var t=e.ts||e.id,hay=[e.text,e.note,e.cat,e.pm].join(" ").toLocaleLowerCase("id-ID");return(!q||hay.indexOf(q)!==-1)&&(!cat||e.cat===cat)&&(!pm||e.pm===pm)&&t>=start&&t<=end});var direction=$("listSort").value==="asc"?1:-1;return result.sort(function(a,b){return((a.ts||a.id)-(b.ts||b.id))*direction})}
 function renderList(){
   if(loading){$("list").innerHTML=SKEL;return}
   var v=filteredView(),day='';$("list").innerHTML=v.length?v.map(function(e){
@@ -441,6 +442,7 @@ $("add").onclick=addExp;
 $("in").onkeydown=function(e){if(e.key==="Enter")addExp()};
 $("list").onchange=async function(e){var id=Number(e.target.getAttribute("data-id"));if(!id||!currentUser)return;var x=exps.find(function(v){return v.id===id;});if(!x)return;var old=x.cat,{error}=await db.from("expenses").update({category:e.target.value}).eq("id",id).eq("user_id",currentUser.id);if(error){toast("Gagal mengubah kategori: "+error.message,"err");e.target.value=old;return;}x.cat=e.target.value;toast("Kategori diubah. Model belajar dari koreksimu.","ok");extra.push([x.text,x.cat]);sv("nb_extra",extra);retrain();renderKpi();renderSum();renderList();renderData();};
 $("list").onclick=async function(e){var edit=e.target.getAttribute("data-edit");if(edit){openEdit(edit);return}var id=Number(e.target.getAttribute("data-del"));if(!id||!currentUser)return;if(!confirm("Hapus catatan pengeluaran ini? Tindakan ini tidak dapat dibatalkan."))return;var {error}=await db.from("expenses").delete().eq("id",id).eq("user_id",currentUser.id);if(error){toast("Gagal menghapus: "+error.message,"err");return;}exps=exps.filter(function(v){return v.id!==id;});renderKpi();renderSum();renderList();toast("Catatan dihapus.","ok");};
+$("listSort").onchange=renderList;
 $("filterCategory").innerHTML='<option value="">Semua kategori</option>'+CATS.map(function(c){return'<option>'+esc(c)+'</option>'}).join("");
 ["searchHistory","filterCategory","filterPayment","filterFrom","filterTo"].forEach(function(id){$(id).addEventListener(id==="searchHistory"?"input":"change",renderList)});
 $("dc").innerHTML=opts(CATS[0]);
