@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Catat Duit – Pencatat Pengeluaran Otomatis</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#e6ecf1;--paper:#fdfdfb;--ink:#1b2430;--mu:#66717e;--ln:#c9d1d9;--ac:#2447d6;--acbg:#e4eafc;--wa:#a8480f;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151b;--paper:#1a222b;--ink:#e8edf2;--mu:#93a0ad;--ln:#334050;--ac:#7f9bff;--acbg:#232f55;--wa:#f0a070;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10151b;--paper:#1a222b;--ink:#e8edf2;--mu:#93a0ad;--ln:#334050;--ac:#7f9bff;--acbg:#232f55;--wa:#f0a070;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Bricolage Grotesque",system-ui,sans-serif}
+.w{max-width:680px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:2rem;line-height:1.1;margin:8px 0 4px;letter-spacing:-.02em}
+h2{font-size:1.1rem;margin:22px 0 8px}
+.mu{color:var(--mu)}small{color:var(--mu)}
+.mono,code,td,.amt{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.86rem}
+nav{display:flex;gap:4px;margin:16px 0;overflow-x:auto}
+nav button{flex:none;border:0;background:transparent;color:var(--mu);font:inherit;font-weight:500;padding:8px 12px;border-radius:6px;cursor:pointer}
+nav button.on{background:var(--ink);color:var(--paper)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.paper{background:var(--paper);padding:18px;border-radius:4px;border-bottom:3px dashed var(--ln)}
+.row{display:flex;gap:8px}
+input[type=text],select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--ln);border-radius:6px;padding:10px 12px;min-width:0}
+input[type=text]{flex:1}
+.btn{border:0;background:var(--ac);color:var(--paper);font:inherit;font-weight:700;padding:10px 18px;border-radius:6px;cursor:pointer}
+.btn.g{background:transparent;color:var(--mu);border:1px solid var(--ln);font-weight:500}
+.hint{margin:8px 0 0;font-size:.88rem;color:var(--mu)}
+.big{font-size:1.5rem;font-weight:700;margin:2px 0 10px}.big span{color:var(--ac);font-family:"IBM Plex Mono",monospace;font-size:1.1rem;margin-left:6px}
+.b{display:grid;grid-template-columns:130px 1fr 40px;gap:8px;align-items:center;font-size:.9rem;margin:5px 0}
+.b em{font-style:normal;text-align:right;font-family:"IBM Plex Mono",monospace;font-size:.8rem}
+.tr{height:8px;background:var(--bg);border-radius:4px;overflow:hidden}.tr i{display:block;height:100%}
+.warn{color:var(--wa);font-size:.9rem;margin:10px 0 0}
+.it{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 0;border-bottom:1px dotted var(--ln)}
+.it:last-child{border:0}
+.it .amt{text-align:right;font-weight:500}
+.it .ct{grid-column:1/3;display:flex;gap:8px;align-items:center}
+.it select{padding:4px 8px;font-size:.85rem}
+.x{border:0;background:none;color:var(--mu);cursor:pointer;font-size:1.1rem;padding:2px 8px}
+.tot{display:flex;justify-content:space-between;font-weight:700;border-top:2px solid var(--ink);margin-top:8px;padding-top:10px}
+.sc{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%}
+th,td{padding:6px 10px;text-align:right;border-bottom:1px solid var(--ln);white-space:nowrap}
+th{font-weight:500;font-size:.8rem;color:var(--mu)}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--paper)}
+tr.t td{font-weight:500;background:var(--acbg)}tr.t td:first-child{background:var(--acbg)}
+code{background:var(--acbg);padding:1px 6px;border-radius:4px}
+.kpi{font-size:2.4rem;font-weight:700;line-height:1}
+[hidden]{display:none!important}
+.w{padding-top:30px}
+h1{font-size:2.4rem;letter-spacing:-.035em}
+nav{background:var(--paper);padding:4px;border-radius:999px;width:max-content;max-width:100%;box-shadow:inset 0 0 0 1px var(--ln)}
+nav button{border-radius:999px;padding:7px 16px}
+nav button.on{background:var(--ac);color:var(--paper)}
+.paper{border:1px solid var(--ln);border-radius:16px;padding:20px;box-shadow:0 10px 30px -18px rgba(27,36,48,.35)}
+#in{font-size:1.1rem;padding:14px 16px;border-radius:12px}
+.btn{border-radius:12px;padding:0 24px}
+input[type=text],select{border-radius:10px}
+input[type=datetime-local]{font:inherit;font-size:.9rem;color:var(--ink);background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:9px 12px;min-width:0}
+.meta{flex-wrap:wrap;margin-top:8px}.meta input[type=text]{flex:1 1 150px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);margin:26px 0 2px}
+.kpis div{padding:0 14px;border-left:1px solid var(--ln);min-width:0}
+.kpis div:first-child{padding-left:0;border:0}
+.kpis small{display:block;font-size:.82rem}
+.kpis b{display:block;font-size:1.3rem;letter-spacing:-.02em;line-height:1.25}
+.fil{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.fil select{font-size:.85rem;padding:6px 10px}
+.tr{height:10px;border-radius:5px}
+.it{grid-template-columns:10px 1fr auto;gap:2px 12px;padding:12px 0;align-items:start}
+.dot{width:10px;height:10px;border-radius:50%;margin-top:8px}
+.tx b{display:block;font-weight:500;overflow-wrap:anywhere}
+.mt{display:flex;flex-wrap:wrap;gap:0 12px;font-size:.78rem;color:var(--mu)}
+.it .amt{padding-top:2px}
+.it .ct{grid-column:2/4;padding-top:2px}
+.dh{display:flex;justify-content:space-between;font-size:.85rem;color:var(--mu);padding:16px 0 4px;border-bottom:1px solid var(--ln)}
+.dh:first-child{padding-top:0}
+@media (max-width:480px){.kpis b{font-size:1.05rem}.kpis div{padding:0 8px}}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>Catat Duit</h1>
+<p class="mu" style="margin:0">Tulis pengeluaranmu seperti chat. Kategorinya ditebak otomatis dengan Naive Bayes.</p>
+<nav id="tabs">
+<button data-t="catat" class="on">Catat</button><button data-t="calc">Cara kerja</button><button data-t="eval">Evaluasi</button><button data-t="data">Data latih</button>
+</nav>
+
+<section id="catat">
+<div class="paper">
+<div class="row"><input type="text" id="in" placeholder="nasi goreng 15rb" autocomplete="off" aria-label="Pengeluaran"><button class="btn" id="add">Catat</button></div>
+<div class="row meta"><input type="datetime-local" id="dtm" aria-label="Tanggal dan jam"><select id="pm" aria-label="Metode pembayaran"><option>Tunai</option><option>QRIS</option><option>Transfer</option><option>E-wallet</option><option>Debit</option><option>Paylater</option></select><input type="text" id="note" placeholder="Catatan (opsional)" autocomplete="off" aria-label="Catatan"></div>
+<p class="hint">Nominal bisa ditulis 15rb, 15k, 15000, atau 1,5jt. Ubah tanggal dan jam kalau mencatat pengeluaran kemarin.</p>
+<div id="res" style="margin-top:14px"></div>
+</div>
+<div class="kpis" id="kpi"></div>
+<div class="fil"><h2>Ringkasan</h2><select id="per" aria-label="Periode"><option value="all">Semua</option><option value="month">Bulan ini</option><option value="week">7 hari terakhir</option><option value="day">Hari ini</option></select></div><div class="paper" id="sum"></div>
+<h2>Daftar pengeluaran</h2><div class="paper" id="list"></div>
+<p class="hint">Kalau kategorinya salah, ganti lewat menu di bawah tiap catatan. Model langsung belajar dari koreksimu.</p>
+</section>
+
+<section id="calc" hidden><div class="paper" id="calcbox"></div></section>
+<section id="eval" hidden><div class="paper" id="evalbox"></div></section>
+<section id="data" hidden>
+<div class="paper">
+<div class="row" style="flex-wrap:wrap"><input type="text" id="dt" placeholder="contoh: bayar uang kas kelas" aria-label="Contoh kalimat"><select id="dc" aria-label="Kategori"></select><button class="btn" id="dadd">Tambah</button></div>
+<div id="dstat" style="margin-top:14px"></div>
+<p><button class="btn g" id="reset">Hapus catatan dan data tambahan</button></p>
+</div>
+</section>
+</div>
+
+<script>
+var CATS=["Makan & Minum","Transport","Hiburan","Pendidikan","Belanja","Kesehatan","Tagihan","Sosial & Donasi","Elektronik","Game","Tugas & Proyek","Penampilan","Rumah Tangga","Olahraga & Hobi","Tabungan","Lainnya"];
+var CC=["#2e8b6f","#3b7dd8","#a35fd1","#d9822b","#c94f6d","#2b9fb3","#8a8f2a","#b8932a","#5b6ee1","#e8643c","#2f8f5b","#d0689a","#7d8a99","#c4a000","#00899a","#8e6c4a"];
+var BASE=[
+["nasi goreng","Makan & Minum"],["es teh manis","Makan & Minum"],["makan siang warteg","Makan & Minum"],["kopi susu","Makan & Minum"],["ayam geprek","Makan & Minum"],["bakso","Makan & Minum"],["mie ayam","Makan & Minum"],["sarapan bubur ayam","Makan & Minum"],["jajan gorengan","Makan & Minum"],["boba","Makan & Minum"],
+["isi bensin","Transport"],["parkir kampus","Transport"],["ojek online","Transport"],["gojek ke kampus","Transport"],["grab ke stasiun","Transport"],["tiket kereta","Transport"],["naik angkot","Transport"],["bayar tol","Transport"],["servis motor","Transport"],
+["nonton bioskop","Hiburan"],["top up game mobile legends","Hiburan"],["tiket konser","Hiburan"],["main billiard","Hiburan"],["karaoke bareng teman","Hiburan"],["spotify premium","Hiburan"],["beli diamond game","Hiburan"],["jalan jalan ke pantai","Hiburan"],
+["fotokopi materi","Pendidikan"],["beli buku kuliah","Pendidikan"],["print tugas","Pendidikan"],["jilid laporan","Pendidikan"],["bayar spp semester","Pendidikan"],["kursus online","Pendidikan"],["beli pulpen buku catatan","Pendidikan"],["uang praktikum","Pendidikan"],
+["beli baju","Belanja"],["beli sepatu","Belanja"],["belanja bulanan indomaret","Belanja"],["sabun shampo","Belanja"],["skincare","Belanja"],["tas ransel","Belanja"],["charger hp","Belanja"],["belanja shopee","Belanja"],
+["beli obat apotek","Kesehatan"],["vitamin","Kesehatan"],["periksa dokter","Kesehatan"],["masker","Kesehatan"],["berobat puskesmas","Kesehatan"],["obat flu","Kesehatan"],["cek gigi","Kesehatan"],
+["bayar listrik","Tagihan"],["token listrik","Tagihan"],["pulsa","Tagihan"],["paket data internet","Tagihan"],["bayar kos","Tagihan"],["wifi bulanan","Tagihan"],["tagihan air pdam","Tagihan"]
+];
+var MORE={
+"Makan & Minum":"nasi padang|nasi uduk|nasi kuning|nasi campur|nasi kucing angkringan|nasi ayam penyet|nasi pecel|soto ayam|soto betawi|rawon|gado gado|pecel lele|lele goreng|ayam bakar|ayam goreng kremes|sate ayam|sate kambing|bakso urat|mie goreng|mie rebus indomie|kwetiau|bihun goreng|capcay|seblak|cilok|batagor|siomay|cireng|pempek|martabak telur|martabak manis|roti bakar|burger|pizza|kebab|ayam kfc|ayam richeese|mcd paket hemat|es jeruk|es kopi|kopi hitam|kopi starbucks|es cokelat|jus alpukat|jus jeruk|es campur|es cendol|es doger|teh tarik|susu kedelai|air mineral|air galon isi ulang|es krim|donat|kue basah|roti sobek|cemilan|keripik|lontong sayur|makan malam bareng|makan di kantin|makan di restoran|nongkrong di cafe|go food|grab food|shopee food|pesan makanan online|ngopi|jajan|makan",
+"Transport":"bensin pertalite|isi pertamax|bbm|bensin motor|parkir motor|parkir mall|parkir liar|karcis parkir|ojol|grab bike|gocar|grab car|taksi online|maxim|indrive|bluebird|tiket bus|bus antar kota|travel|tiket pesawat|tiket kapal feri|krl|commuter line|transjakarta|mrt|lrt|bemo|becak|ojek pangkalan|e-toll|top up etoll|top up kartu flazz|topup brizzi|tol cipularang|ongkos pulang kampung|ongkos ke kampus|ongkos naik|ganti oli|ganti ban|tambal ban|cuci motor|cuci mobil|servis mobil|pajak kendaraan|bayar stnk|service rutin|sparepart motor|aki motor|rantai motor|sewa motor|sewa mobil|rental mobil|ongkos|transport",
+"Hiburan":"tiket bioskop|nonton film|xxi|cgv|netflix|disney hotstar|vidio|youtube premium|langganan spotify|top up free fire|top up pubg|top up genshin|top up valorant|skin game|voucher steam|game steam|battle pass|topup diamond ml|mabar warnet|main warnet|rental ps|main ps|timezone|bowling|sewa lapangan futsal|sewa lapangan badminton|nonton konser|tiket festival musik|tiket wisata|tiket masuk taman|liburan|jalan jalan|healing|camping|mendaki gunung|naik wahana|dufan|kebun binatang|museum|komik|baca webtoon|langganan webtoon|novel|nonton teater|stand up comedy|tiket pertandingan|nonton bola|hobi|mancing|alat pancing|lightstick|merch|photobox|foto studio|hiburan",
+"Pendidikan":"fotokopi|fotocopy tugas|print makalah|print skripsi|cetak laporan|cetak poster|cetak spanduk|jilid skripsi|jilid makalah|buku|buku referensi|buku latihan soal|ebook|modul praktikum|laporan praktikum|alat praktikum|komponen praktikum|spp|ukt|uang kuliah|uang semester|biaya registrasi|daftar ulang|biaya wisuda|biaya sidang|bimbingan belajar|les privat|les bahasa inggris|kursus coding|kursus bahasa|kursus udemy|langganan coursera|sertifikasi|ujian toefl|tes ielts|biaya seminar|tiket seminar|workshop|pelatihan|bootcamp|alat tulis|pulpen|pensil|penghapus|buku tulis|binder|map plastik|kertas hvs|kertas a4|tinta printer|isi tinta|stabilo|penggaris|kalkulator|flashdisk|materai|biaya penelitian|print|tugas kuliah",
+"Belanja":"baju|kaos|kemeja|celana jeans|celana pendek|jaket|hoodie|kerudung|hijab|rok|dress|sepatu sneakers|sandal|kaos kaki|topi|tas|dompet|jam tangan|kacamata|parfum|deodoran|sunscreen|serum|facial wash|bedak|lipstik|make up|sabun mandi|sabun cuci|deterjen|pewangi|pelembut pakaian|shampoo|pasta gigi|sikat gigi|tisu|belanja dapur|belanja sayur|belanja pasar|belanja alfamart|belanja supermarket|belanja online|belanja tokopedia|lazada|checkout keranjang|cod paket|ongkir paket|earphone|headset|kabel data|power bank|casing hp|tempered glass|mouse|keyboard|laptop|hp baru|perabot|bantal|sprei|ember|gayung|lemari|peralatan masak|piring gelas|rak sepatu|lampu|baterai|gas elpiji|belanja",
+"Kesehatan":"obat|obat batuk|obat sakit kepala|paracetamol|obat maag|obat diare|obat alergi|vitamin c|suplemen|multivitamin|minyak kayu putih|balsem|plester|betadine|hansaplast|termometer|tes covid|rapid test|cek darah|cek lab|medical check up|periksa ke dokter|dokter umum|dokter gigi|scaling gigi|tambal gigi|behel|periksa mata|ganti lensa kacamata|rumah sakit|opname|igd|klinik|bpjs kesehatan|iuran bpjs|asuransi kesehatan|fisioterapi|pijat refleksi|pijat urut|terapi|psikolog|konseling|vaksin|imunisasi|masker medis|hand sanitizer|obat merah|tolak angin|oralit|salonpas|koyo|membership gym|gym|yoga|sakit|berobat",
+"Tagihan":"listrik bulanan|bayar pln|token pln|pulsa telkomsel|pulsa xl|pulsa indosat|isi pulsa|kuota internet|paket data|kuota belajar|wifi kos|wifi indihome|internet rumah|biznet|iuran wifi|bayar air|tagihan pdam|air ledeng|sewa kos|uang kos|kontrakan|bayar kontrakan|sewa kamar|uang sewa|cicilan motor|cicilan hp|cicilan laptop|cicilan pinjaman|paylater|spaylater|kredivo|tagihan kartu kredit|tagihan|iuran bulanan|iuran sampah|iuran keamanan|iuran rt|biaya admin bank|admin transfer|biaya admin|asuransi|premi asuransi|langganan bulanan|tv kabel|langganan icloud|langganan google one|langganan chatgpt|domain hosting|biaya hosting|bayar pajak|bpjs ketenagakerjaan|token listrik kos|listrik|internet",
+"Sosial & Donasi":"uang kas|kas kelas|kas angkatan|iuran angkatan|iuran kelas|iuran himpunan|iuran organisasi|patungan kado|patungan hadiah|kado ulang tahun|kado nikah|kado teman|hadiah|bingkisan|angpao|amplop kondangan|kondangan|sumbangan|sumbangan masjid|infaq|infak|sedekah|zakat|zakat fitrah|donasi|donasi bencana|donasi kitabisa|kotak amal|jumat berkah|arisan|uang arisan|traktir teman|traktir ulang tahun|bayarin teman|pinjamin teman|tahlilan|takziah|bunga duka|sumbangan duka|biaya acara|dana kegiatan|dana acara kampus|iuran panitia|gotong royong|ronda|iuran 17 agustusan|thr keponakan|uang saku adik|kirim uang orang tua|kirim ke ibu|transfer ke orang tua|persembahan|kolekte|perpuluhan|dana sosial|bakti sosial|baksos|santunan|kado"
+};
+CATS.forEach(function(c){(MORE[c]||"").split("|").forEach(function(t){if(t&&!BASE.some(function(b){return b[0]===t}))BASE.push([t,c])})});
+var NEW={
+"Belanja":"belanja bulanan|belanja mingguan|belanja groceries|sembako|beras|minyak goreng|gula|telur|sayur|buah|daging ayam|belanja di pasar|belanja di indomaret|belanja di alfamart|belanja di shopee|belanja di tiktok shop|flash sale|voucher belanja|barang online|belanja bulanan indomaret|belanja shopee",
+"Elektronik":"iem|earphone|earbuds|tws|headset|headphone|headset gaming|speaker bluetooth|mouse|mouse gaming|mousepad|keyboard|keyboard mekanikal|keycaps|switch keyboard|webcam|microphone|monitor|laptop|ram laptop|ssd|harddisk|flashdisk|memory card|kartu memori|hp baru|charger hp|kabel data|kabel charger|kabel hdmi|kabel usb|adaptor charger|power bank|casing hp|tempered glass|anti gores|tripod|ring light|smartwatch|tablet|stylus|router wifi|usb hub|converter|stop kontak|cooling pad|stand laptop|tas laptop|kipas laptop|thermal paste|servis laptop|servis hp|ganti baterai hp|ganti layar hp|instal ulang laptop|gadget|elektronik|printer|scanner|proyektor|kamera|speaker",
+"Game":"top up game mobile legends|beli diamond game|top up free fire|top up pubg|top up genshin|top up valorant|skin game|voucher steam|game steam|battle pass|topup diamond ml|mabar warnet|main warnet|rental ps|main ps|top up roblox|robux|voucher google play|voucher garena|voucher unipin|top up codm|top up honor of kings|top up higgs domino|chip domino|weekly diamond pass|starlight member|skin hero|gacha|top up gacha|game ps5|game switch|game original|game pc|dlc game|game epic|steam wallet|xbox game pass|ps plus|nintendo online|sewa ps|rental playstation|turnamen game|tiket turnamen esport|daftar turnamen|akun game|joki rank|jasa joki|paket data game|game|main game",
+"Tugas & Proyek":"fotokopi materi|print tugas|jilid laporan|uang praktikum|fotokopi|fotocopy tugas|print makalah|print skripsi|cetak laporan|cetak poster|cetak spanduk|jilid skripsi|jilid makalah|modul praktikum|laporan praktikum|alat praktikum|komponen praktikum|kertas hvs|kertas a4|tinta printer|isi tinta|materai|biaya penelitian|print|tugas kuliah|bahan prototipe|cetak 3d|filament|acrylic|mdf|kayu triplek|cat semprot|lem g|lem tembak|solder|timah solder|pcb|breadboard|kabel jumper|resistor|led|sensor ultrasonik|sensor suhu|arduino uno|nodemcu|esp32|servo|relay|baterai lipo|project box|bahan maket|styrofoam|karton|kertas manila|spidol|gunting|cutter|double tape|mika|fotokopi kuesioner|cetak kuesioner|souvenir responden|hadiah responden|biaya survei|transport survei|jilid proposal|cetak proposal|hosting tugas|domain tugas|sewa vps|biaya cloud|dana tugas kelompok|iuran tugas kelompok|patungan tugas kelompok|properti presentasi|banner presentasi|cetak banner|cetak brosur|cetak sertifikat|laminating|jilid spiral|fotokopi jurnal|print jurnal|print slide|print ppt|scan dokumen|biaya publikasi jurnal|cek plagiasi|tugas|proyek|tugas akhir",
+"Penampilan":"baju|kaos|kemeja|celana jeans|celana pendek|jaket|hoodie|kerudung|hijab|rok|dress|sepatu sneakers|sandal|kaos kaki|topi|tas|dompet|jam tangan|kacamata|parfum|deodoran|sunscreen|serum|facial wash|bedak|lipstik|make up|skincare|beli baju|beli sepatu|tas ransel|seragam|jas almamater|batik|kemeja batik|blazer|sweater|celana kain|celana training|sepatu pantofel|sandal jepit|ikat pinggang|daster|mukena|sarung|peci|jepit rambut|potong rambut|pangkas rambut|barbershop|salon|creambath|rebonding|cat rambut|manicure|nail art|perawatan wajah|masker wajah|toner|moisturizer|pelembab|lip balm|cleanser|micellar water|body lotion|handbody|maskara|eyeliner|cushion|foundation|fashion",
+"Rumah Tangga":"sabun mandi|sabun cuci|deterjen|pewangi|pelembut pakaian|shampoo|pasta gigi|sikat gigi|tisu|perabot|bantal|sprei|ember|gayung|lemari|peralatan masak|piring gelas|rak sepatu|lampu|baterai|gas elpiji|sabun shampo|sapu|pel lantai|pembersih lantai|sabun cuci piring|sikat wc|kantong sampah|obat nyamuk|kasur|selimut|handuk|pembalut|kebutuhan rumah|kebutuhan harian|peralatan mandi|rice cooker|kipas angin|setrika|hanger|gantungan baju",
+"Olahraga & Hobi":"membership gym|gym|yoga|sewa lapangan futsal|sewa lapangan badminton|bowling|mancing|alat pancing|camping|mendaki gunung|hobi|raket badminton|kok badminton|sepatu futsal|bola futsal|jersey|sepeda|servis sepeda|tiket renang|daftar lomba lari|event lari|alat musik|senar gitar|gitar|cat lukis|kanvas|benang rajut|tanaman hias|pot tanaman|pupuk|makanan kucing|pasir kucing|olahraga|renang|sewa lapangan|pilates|zumba|alat fitness|dumbbell|matras yoga",
+"Tabungan":"nabung|tabungan|setor tabungan|nabung emas|emas antam|reksa dana|bibit reksa dana|saham|beli saham|bibit|bareksa|ajaib|obligasi|sbn|deposito|dana darurat|dana pensiun|tabungan haji|tabungan qurban|celengan|top up tabungan|investasi|crypto|bitcoin|tokocrypto|indodax|reksadana pasar uang|nabung liburan|nabung nikah|menabung|simpanan",
+"Lainnya":"denda|denda telat|denda perpustakaan|biaya tak terduga|uang hilang|kehilangan uang|ganti rugi|salah transfer|pinjam uang|lain lain|biaya lain|tak terduga|fee|bikin ktp|perpanjang sim|bayar sim|pembuatan skck|legalisir|legalisir ijazah|biaya pengurusan dokumen|paspor|lainnya"
+};
+CATS.forEach(function(c){(NEW[c]||"").split("|").forEach(function(t){if(!t)return;BASE=BASE.filter(function(b){return b[0]!==t});BASE.push([t,c])})});
+var NEW2={
+'Makan & Minum':'kfc|mcd|hokben|pizza hut|starbucks|janji jiwa|kopi kenangan|chatime|xing fu tang|warung padang|geprek bensu|ayam gepuk|nasi liwet|mie gacoan|ramen|sushi|dimsum|fore coffee|tomoro coffee|point coffee|kopi tuku|dunkin|burger king|warmindo|angkringan|nasi bungkus|lalapan|buka puasa|sahur|takjil|sarapan|makan siang|makan malam',
+'Transport':'gojek|grab|maxim|kai|damri|bus damri|primajasa|lion air|garuda|citilink|batik air|traveloka|pelni|taksi|shell|pertamina|oli yamalube|ganti kampas rem|ganti busi|ganti lampu motor|spion|bengkel|ahass|tol bsd|tol jagorawi|parkir inap|valet|bensin|transportasi',
+'Hiburan':'cinepolis|disney plus|hbo go|viu|wetv|youtube|joox|apple music|nonton bareng|premiere film|escape room|ice skating|trampoline|wahana|konser|fan meeting|tiket teater|tiket pameran|pameran|bazar|night market|taman hiburan|waterpark|snorkeling|villa|staycation|hotel liburan|piknik',
+'Pendidikan':'buku paket|buku bekas|buku cetak|jurnal berbayar|langganan jurnal|kamus|try out|simulasi ujian|bimbel|les matematika|les coding|les toefl|kelas online|kelas bahasa|seminar nasional|webinar berbayar|sertifikat kompetensi|ujian sertifikasi|biaya kkn|biaya magang|biaya skripsi|biaya yudisium|biaya ijazah|biaya transkrip|biaya krs|biaya perpustakaan|iuran lab|uang lab|biaya lab',
+'Belanja':'minimarket|hypermart|superindo|giant|transmart|carrefour|lotte mart|pasar tradisional|tukang sayur|warung sembako|beras|mie instan|snack|minuman|susu|kopi sachet|tiktok shop|blibli|bukalapak|ongkir|biaya layanan marketplace|voucher diskon|cashback|belanja harian|belanja kebutuhan',
+'Kesehatan':'kimia farma|apotek k24|halodoc|alodokter|konsultasi dokter|resep dokter|obat resep|antibiotik|obat demam|obat pilek|obat sakit perut|obat sakit gigi|obat sakit tenggorokan|obat mata|tetes mata|obat gatal|salep|krim luka|perban|vitamin d|vitamin b|zinc|probiotik|jamu|herbal|akupunktur|bekam|cek kolesterol|cek gula darah|cek tensi|rontgen|usg|lab darah|tes alergi|dokter kulit|dokter mata|dokter spesialis|dokter kandungan',
+'Tagihan':'indihome|biznet|first media|myrepublic|telkomsel|xl axiata|indosat|smartfren|pln mobile|pdam|gopay later|shopeepay later|akulaku|home credit|adira|fif|biaya bulanan|biaya tahunan|kartu kredit|iuran tahunan|pajak tahunan|asuransi motor|asuransi jiwa|prudential|allianz',
+'Sosial & Donasi':'kondangan teman|nikahan|amplop nikahan|sumbangan nikahan|ulang tahun teman|kado wisuda|kado sidang|hadiah dosen|souvenir acara|konsumsi acara|arisan keluarga|iuran keluarga|dana sosial kelas|donasi panti asuhan|donasi yatim|sedekah subuh|infaq jumat|amal jariyah|wakaf|qurban|patungan qurban|kas mingguan|kas bulanan|uang kas organisasi|iuran bem|iuran ukm|dana kepanitiaan|sumbangan korban bencana|bantu teman|bayarin makan teman|kirim uang keluarga|uang bulanan orang tua|angpau lebaran|thr|salam tempel|hampers lebaran',
+'Elektronik':'iphone|samsung|xiaomi|oppo|vivo|realme|infinix|macbook|asus|lenovo|acer|logitech|razer|rexus|fantech|redragon|jbl|anker|baseus|ugreen|xiaomi band|apple watch|airpods|kabel type c|kabel lightning|otg|card reader|ssd nvme|ram ddr4|processor|vga card|motherboard|casing pc|psu|fan casing|servis pc|rakit pc|upgrade ram|ganti ssd|ganti keyboard laptop|ganti baterai laptop|ganti charger laptop|lisensi windows|lisensi office',
+'Game':'mobile legends|free fire|pubg mobile|genshin impact|honkai star rail|valorant|league of legends|dota 2|call of duty mobile|roblox|minecraft|fifa mobile|efootball|clash of clans|clash royale|brawl stars|steam sale|epic games|ps store|nintendo eshop|gamepass|garena shell|unipin|codashop|itemku|razer gold|google play gift card|apple gift card',
+'Tugas & Proyek':'arduino|nodemcu|raspberry pi|esp8266|esp32 cam|sensor dht11|sensor pir|sensor gas|sensor jarak|motor dc|motor servo|driver motor|modul relay|modul bluetooth|modul gps|lcd i2c|oled|kabel dupont|jumper wire|power supply|adaptor 12v|baterai 18650|battery holder|saklar|push button|buzzer|led rgb|kapasitor|transistor|dioda|multimeter|solder uap|pasta solder|lem uhu|lem lilin|kardus bekas|triplek|akrilik|spray paint|cetak stiker|stiker vinyl|kertas lipat|clip file|cetak flyer|cetak id card|cetak x banner|cetak mmt|biaya jilid|biaya fotokopi|biaya print|biaya cetak|bahan tugas|bahan praktikum|bahan proyek|kebutuhan tugas|kebutuhan proyek',
+'Penampilan':'uniqlo|zara|erigo|thrift|distro|sepatu converse|sepatu nike|sepatu adidas|sepatu vans|sandal swallow|tas eiger|tas consina|jam casio|jam g shock|kacamata hitam|topi baseball|kaos oblong|kaos polo|celana chino|celana cargo|rok plisket|gamis|abaya|pashmina|bergo|scrunchie|bando|gelang|kalung|cincin|anting|body mist|sabun muka|pelembab wajah|sunblock|toner wajah|serum vitamin c|masker rambut|vitamin rambut|wax rambut|pomade|gel rambut|alat cukur',
+'Rumah Tangga':'rinso|sunlight|molto|downy|so klin|wipol|baygon|kapur barus|sapu lidi|keset|tempat sampah|tikar|karpet|gorden|kasur lipat|bantal guling|guling|rak buku|meja belajar|kursi belajar|lemari plastik|lampu belajar|lampu led|kabel roll|dispenser|galon baru|isi galon|tabung gas|kompor|panci|wajan|spatula|pisau dapur|talenan|tupperware|botol minum|kotak makan|sendok garpu|gelas|mangkok|ember cuci|jemuran|plastik sampah|tisu toilet|tisu basah|sabun tangan|hand soap|sikat kamar mandi',
+'Olahraga & Hobi':'futsal|badminton|basket|voli|sepak bola|tenis meja|lari pagi|jogging|bersepeda|hiking|naik gunung|panjat tebing|bela diri|taekwondo|karate|silat|gym bulanan|personal trainer|whey protein|creatine|kaos olahraga|celana olahraga|sepatu lari|sepatu badminton|tas olahraga|botol olahraga|resistance band|skipping rope|lapangan|studio musik|ukulele|pick gitar|kamera mirrorless|lensa|cat air|kuas|pensil warna|buku sketsa|lego|puzzle|board game|kartu remi|ikan hias|aquarium|vaksin kucing',
+'Tabungan':'setor tunai tabungan|tabungan berjangka|tabungan emas|beli emas digital|pegadaian digital|emas batangan|antam|reksa dana saham|reksa dana pasar uang|saham blue chip|stockbit|ipot|tanamduit|sbn ritel|sukuk|deposito berjangka|dana cadangan|dana darurat bulanan|dana hari tua|dana pendidikan|tabungan nikah|tabungan rumah|tabungan kendaraan|tabungan liburan|tabungan anak|celengan online|nabung harian|nabung mingguan|nabung bulanan|investasi bulanan|investasi emas|investasi saham|investasi reksa dana|crypto trading|beli bitcoin|beli ethereum',
+'Lainnya':'biaya notaris|biaya pos|biaya kirim dokumen|biaya legalisir|biaya skck|biaya sim|biaya ktp|biaya paspor|biaya kk|biaya akta|biaya perpanjang stnk|ongkos pindahan|biaya kehilangan|biaya kerusakan|biaya perbaikan|biaya servis|biaya denda|denda tilang|denda parkir|denda telat bayar|denda kos|uang ganti|uang muka|dp|biaya pendaftaran|biaya admin lainnya|biaya jasa|tip|uang tip|ongkos tukang|upah tukang|jasa laundry|laundry|jasa antar|jastip|biaya titip'
+};
+CATS.forEach(function(c){(NEW2[c]||'').split('|').forEach(function(t){if(t&&!BASE.some(function(b){return b[0]===t}))BASE.push([t,c])})});
+var CTX={
+'Makan & Minum':'kantin|warteg|cafe|resto|delivery|go food|grab food|bareng teman|kenyang|lapar',
+'Transport':'gojek|grab|maxim|bandara|stasiun|terminal|pulang pergi|berangkat|perjalanan|macet',
+'Hiburan':'weekend|akhir pekan|malam minggu|bareng teman|seru|liburan semester|santai|healing',
+'Pendidikan':'semester|kuliah|mata kuliah|kampus|perkuliahan|akademik|dosen|mahasiswa',
+'Belanja':'shopee|tokopedia|lazada|indomaret|alfamart|supermarket|pasar|bulanan|mingguan',
+'Kesehatan':'apotek|klinik|dokter|rumah sakit|puskesmas|sakit|kimia farma|sehat',
+'Tagihan':'bulanan|jatuh tempo|tiap bulan|autodebet|rutin|wajib|tenggat',
+'Sosial & Donasi':'teman|angkatan|keluarga|tetangga|acara|bersama|kelas|undangan',
+'Elektronik':'gaming|wireless|bluetooth|second|original|toko komputer|service center|garansi',
+'Game':'diamond|voucher|akun|online|event|skin|mobile|kuota',
+'Tugas & Proyek':'tugas|kelompok|praktikum|proyek|laporan|presentasi|deadline|dosen',
+'Penampilan':'warna|ukuran|model|kekinian|thrift|distro|mall|original',
+'Rumah Tangga':'rumah|kos|dapur|kamar mandi|stok|habis|kebutuhan',
+'Olahraga & Hobi':'sore|pagi|komunitas|latihan|bareng teman|rutin|hobi',
+'Tabungan':'bulanan|rutin|target|setor|otomatis|bulan ini|menabung',
+'Lainnya':'mendadak|tak terduga|urus|kemarin|biaya|dokumen|administrasi'
+};
+Object.keys(CTX).forEach(function(k){CTX[k]=CTX[k].split('|')});
+function rng(s){return function(){s|=0;s=s+1831565813|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+var R=rng(7),AUG=[];
+BASE.forEach(function(b,i){var cx=CTX[b[1]];if(!cx)return;var p=function(){return cx[Math.floor(R()*cx.length)]};AUG.push([b[0]+' '+p(),b[1],i],[p()+' '+b[0],b[1],i],[b[0]+' '+p()+' '+p(),b[1],i],[p()+' '+b[0]+' '+p(),b[1],i])});
+var STOP=new Set(["di","ke","dari","dan","yang","untuk","buat","sama","dengan","tadi","hari","ini","itu","aku","saya","pak","bu","bayar","beli"]);
+var UNIT=["rp","rb","ribu","k","jt","juta"];
+function tok0(t){
+  return t.toLowerCase().replace(/[^a-z0-9\s.,]/g," ").split(/\s+/).map(function(w){return w.replace(/^[.,]+|[.,]+$/g,"")}).filter(function(w){
+    return w&&!/^\d[\d.,]*(rb|ribu|k|jt|juta)?$/.test(w)&&UNIT.indexOf(w)<0&&!STOP.has(w);
+  });
+}
+/* "bayar" dan "beli" dibuang karena muncul di banyak kategori, jadi tidak membantu membedakan */
+var TC=Object.create(null);function tok(t){return TC[t]||(TC[t]=tok0(t))}
+function train(data){
+  var m={cnt:{},tot:{},w:{},vocab:new Set(),n:data.length};
+  CATS.forEach(function(c){m.cnt[c]=0;m.tot[c]=0;m.w[c]={}});
+  data.forEach(function(d){var c=d[1];m.cnt[c]++;tok(d[0]).forEach(function(w){m.w[c][w]=(m.w[c][w]||0)+1;m.tot[c]++;m.vocab.add(w)})});
+  return m;
+}
+function score(m,text){
+  var ws=tok(text),V=m.vocab.size||1;
+  var rows=ws.map(function(w){return{w:w,known:m.vocab.has(w),l:CATS.map(function(c){return Math.log(((m.w[c][w]||0)+1)/(m.tot[c]+V))})}});
+  var prior=CATS.map(function(c){return Math.log((m.cnt[c]+1)/(m.n+CATS.length))});
+  var sc=prior.map(function(p,i){return rows.reduce(function(s,r){return s+(r.known?r.l[i]:0)},p)});
+  var mx=Math.max.apply(null,sc),e=sc.map(function(s){return Math.exp(s-mx)}),sum=e.reduce(function(a,b){return a+b},0);
+  return{ws:ws,rows:rows,prior:prior,sc:sc,p:e.map(function(x){return x/sum})};
+}
+function best(r){return r.p.indexOf(Math.max.apply(null,r.p))}
+function amount(t){
+  var re=/(\d+(?:[.,]\d+)*)\s*(rb|ribu|k|jt|juta)?(?![a-z])/gi,m;
+  while((m=re.exec(t))){
+    var s=m[1],sf=(m[2]||"").toLowerCase(),v;
+    if(sf){v=parseFloat(s.replace(",","."))*(/^(jt|juta)$/.test(sf)?1e6:1e3)}else{v=parseFloat(s.replace(/[.,]/g,""))}
+    if(v>=100)return Math.round(v);
+  }
+  return 0;
+}
+var rp=function(n){return"Rp"+n.toLocaleString("id-ID")};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+var $=function(id){return document.getElementById(id)};
+function ld(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+var extra=ld("nb_extra",[]),exps=ld("nb_exp",[]),M,last=null;
+function all(){var e=[];extra.forEach(function(x){for(var k=0;k<5;k++)e.push(x)});return BASE.concat(AUG,e)}
+function retrain(){M=train(all())}
+retrain();
+
+function bar(c,p,i){return'<div class="b"><span>'+c+'</span><div class="tr"><i style="width:'+(p*100)+'%;background:'+CC[i]+'"></i></div><em>'+(p*100).toFixed(0)+'%</em></div>'}
+function opts(sel){return CATS.map(function(c){return'<option'+(c===sel?" selected":"")+'>'+c+'</option>'}).join("")}
+
+function renderRes(){
+  var el=$("res");
+  if(!last){el.innerHTML='<p class="mu" style="margin:0">Contoh: <b>isi bensin 20rb</b>, <b>es teh 5000</b>, atau <b>print tugas 3rb</b>.</p>';return}
+  var r=last.r,idx=r.p.map(function(p,i){return[p,i]}).sort(function(a,b){return b[0]-a[0]});
+  var known=r.rows.some(function(x){return x.known});
+  el.innerHTML='<div class="mu">Hasil untuk “'+esc(last.t)+'”</div><div class="big">'+CATS[idx[0][1]]+'<span>'+(idx[0][0]*100).toFixed(0)+'%</span></div>'
+    +idx.slice(0,3).map(function(x){return bar(CATS[x[1]],x[0],x[1])}).join("")
+    +(known?"":'<p class="warn">Kata-kata ini belum dikenal model. Pilih kategori yang benar di daftar di bawah supaya model belajar.</p>');
+}
+function renderSum(){
+  var t=CATS.map(function(){return 0}),all_=0;
+  view().forEach(function(e){t[CATS.indexOf(e.cat)]+=e.amt;all_+=e.amt});
+  if(!view().length){$("sum").innerHTML='<p class="mu" style="margin:0">Belum ada catatan.</p>';return}
+  var mx=Math.max.apply(null,t)||1;
+  $("sum").innerHTML=CATS.map(function(c,i){return t[i]?'<div class="b" style="grid-template-columns:130px 1fr 90px"><span>'+c+'</span><div class="tr"><i style="width:'+(t[i]/mx*100)+'%;background:'+CC[i]+'"></i></div><em>'+rp(t[i])+'</em></div>':""}).join("")
+    +'<div class="tot"><span>Total</span><span class="mono">'+rp(all_)+'</span></div>';
+}
+function renderList(){
+  var v=view(),day='';$("list").innerHTML=v.length?v.map(function(e){
+    var d=new Date(e.ts||e.id),k=d.toDateString(),hd='';if(k!==day){day=k;hd='<div class="dh"><span>'+dlabel(d)+'</span><span class="mono">'+rp(v.filter(function(x){return new Date(x.ts||x.id).toDateString()===k}).reduce(function(s,x){return s+x.amt},0))+'</span></div>'}
+    return hd+'<div class="it"><i class="dot" style="background:'+CC[CATS.indexOf(e.cat)]+'"></i><div class="tx"><b>'+esc(e.text)+'</b><span class="mt"><span>'+hm(d)+'</span><span>'+esc(e.pm||'Tunai')+'</span>'+(e.note?'<span>'+esc(e.note)+'</span>':'')+'</span></div><span class="amt">'+(e.amt?rp(e.amt):"–")+'</span><div class="ct"><select data-id="'+e.id+'" aria-label="Kategori">'+opts(e.cat)+'</select><button class="x" data-del="'+e.id+'" aria-label="Hapus catatan">×</button></div></div>';
+  }).join(""):'<p class="mu" style="margin:0">Belum ada catatan pada periode ini.</p>';
+}
+function renderCalc(){
+  var el=$("calcbox");
+  var h='<p style="margin-top:0">Naive Bayes memilih kategori dengan skor tertinggi:</p><p><code>skor(c) = log P(c) + Σ log P(kata | c)</code></p><p><code>P(kata | c) = (jumlah kata di c + 1) / (total kata di c + ukuran kosakata)</code></p><p class="mu">Angka +1 disebut Laplace smoothing, supaya kata yang belum pernah muncul di sebuah kategori tidak membuat peluangnya nol.</p>';
+  if(!last){el.innerHTML=h+'<p class="mu">Catat satu pengeluaran dulu, perhitungan untuk kalimat itu akan muncul di sini.</p>';return}
+  var r=last.r,k=best(r);
+  h+='<h2>Kalimat: '+esc(last.t)+'</h2><p>Setelah nominal dan kata umum dibuang, kata yang tersisa: '+(r.ws.length?r.ws.map(function(w){return'<code>'+esc(w)+(M.vocab.has(w)?"":" (baru)")+'</code>'}).join(" "):"tidak ada")+'</p>';
+  h+='<div class="sc"><table><tr><th></th>'+CATS.map(function(c){return"<th>"+c+"</th>"}).join("")+'</tr>';
+  h+='<tr><td>log P(c)</td>'+r.prior.map(function(x){return"<td>"+x.toFixed(2)+"</td>"}).join("")+'</tr>';
+  r.rows.forEach(function(x){h+='<tr><td>log P(“'+esc(x.w)+'” | c)'+(x.known?"":" <small>diabaikan</small>")+'</td>'+x.l.map(function(v){return'<td'+(x.known?"":' class="mu"')+'>'+v.toFixed(2)+'</td>'}).join("")+'</tr>'});
+  h+='<tr class="t"><td>Skor total</td>'+r.sc.map(function(s){return"<td>"+s.toFixed(2)+"</td>"}).join("")+'</tr>';
+  h+='<tr class="t"><td>Probabilitas</td>'+r.p.map(function(p){return"<td>"+(p*100).toFixed(1)+"%</td>"}).join("")+'</tr></table></div>';
+  h+='<p>Skor tertinggi ada di <b>'+CATS[k]+'</b>, jadi itulah hasil prediksinya. Probabilitas didapat dengan mengubah skor log menjadi persentase (softmax).</p>';
+  el.innerHTML=h;
+}
+function renderEval(){
+  var d=BASE.concat(extra),ok=0,per={},bad=[],ne=Math.ceil(d.length/4);
+  CATS.forEach(function(c){per[c]=[0,0]});
+  d.forEach(function(x,i){
+    if(i%4)return;var m=train(d.filter(function(_,j){return j!==i}).concat(AUG.filter(function(a){return a[2]!==i})));
+    var p=CATS[best(score(m,x[0]))];
+    per[x[1]][1]++;
+    if(p===x[1]){ok++;per[x[1]][0]++}else bad.push([x[0],x[1],p]);
+  });
+  var h='<div class="kpi">'+(ok/ne*100).toFixed(1)+'%</div><p class="mu">Akurasi leave-one-out pada '+ne+' contoh asli (setiap contoh keempat). Tiap contoh diuji oleh model yang dilatih tanpa contoh itu dan tanpa variasi otomatisnya.</p>';
+  h+='<h2>Akurasi per kategori</h2>'+CATS.map(function(c,i){var a=per[c];return bar(c,a[1]?a[0]/a[1]:0,i)}).join("");
+  h+='<h2>Contoh yang salah ditebak</h2>'+(bad.length?'<div class="sc"><table><tr><th>Teks</th><th>Seharusnya</th><th>Ditebak</th></tr>'+bad.slice(0,12).map(function(b){return"<tr><td>"+esc(b[0])+"</td><td>"+b[1]+"</td><td>"+b[2]+"</td></tr>"}).join("")+'</table></div>':'<p class="mu">Tidak ada.</p>');
+  $("evalbox").innerHTML=h;
+}
+function renderData(){
+  var n={};CATS.forEach(function(c){n[c]=0});BASE.concat(extra).forEach(function(x){n[x[1]]++});
+  var mx=Math.max.apply(null,CATS.map(function(c){return n[c]}));
+  $("dstat").innerHTML='<p class="mu" style="margin-top:0">Total '+(BASE.length+extra.length)+' contoh asli dan koreksi, ditambah '+AUG.length+' variasi otomatis untuk melatih model.</p>'+CATS.map(function(c,i){return'<div class="b" style="grid-template-columns:130px 1fr 40px"><span>'+c+'</span><div class="tr"><i style="width:'+(n[c]/mx*100)+'%;background:'+CC[i]+'"></i></div><em>'+n[c]+'</em></div>'}).join("");
+}
+function renderAll(){renderRes();renderKpi();renderSum();renderList();renderCalc();renderData()}
+
+function pad(n){return(n<10?'0':'')+n}
+function setNow(){var n=new Date();$('dtm').value=n.getFullYear()+'-'+pad(n.getMonth()+1)+'-'+pad(n.getDate())+'T'+pad(n.getHours())+':'+pad(n.getMinutes())}
+function ts(){var t=$('dtm').value?new Date($('dtm').value).getTime():NaN;return isNaN(t)?Date.now():t}
+function hm(d){return pad(d.getHours())+':'+pad(d.getMinutes())}
+function dlabel(d){var n=new Date(),a=new Date(n.getFullYear(),n.getMonth(),n.getDate()).getTime(),b=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(),x=Math.round((a-b)/864e5);return x===0?'Hari ini':x===1?'Kemarin':d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long'})}
+function view(){var p=$('per').value,n=new Date(),s=0;if(p==='day')s=new Date(n.getFullYear(),n.getMonth(),n.getDate()).getTime();if(p==='week')s=new Date(n.getFullYear(),n.getMonth(),n.getDate()-6).getTime();if(p==='month')s=new Date(n.getFullYear(),n.getMonth(),1).getTime();return exps.filter(function(e){return(e.ts||e.id)>=s}).sort(function(a,b){return(b.ts||b.id)-(a.ts||a.id)})}
+function kp(l,v){return'<div><small>'+l+'</small><b>'+v+'</b></div>'}
+function renderKpi(){var n=new Date(),d0=new Date(n.getFullYear(),n.getMonth(),n.getDate()).getTime(),m0=new Date(n.getFullYear(),n.getMonth(),1).getTime(),a=0,b=0,t={};exps.forEach(function(e){var s=e.ts||e.id;if(s>=d0)a+=e.amt;if(s>=m0){b+=e.amt;t[e.cat]=(t[e.cat]||0)+e.amt}});var tc=Object.keys(t).sort(function(x,y){return t[y]-t[x]})[0];$('kpi').innerHTML=kp('Hari ini',rp(a))+kp('Bulan ini',rp(b))+kp('Terbesar bulan ini',tc||'-')}
+function addExp(){
+  var t=$("in").value.trim();if(!t)return;
+  var r=score(M,t);
+  exps.unshift({id:Date.now(),ts:ts(),text:t,amt:amount(t),cat:CATS[best(r)],pm:$("pm").value,note:$("note").value.trim()});
+  last={t:t,r:r};sv("nb_exp",exps);$("in").value="";$("note").value="";setNow();renderAll();$("in").focus();
+}
+$("add").onclick=addExp;
+$("in").onkeydown=function(e){if(e.key==="Enter")addExp()};
+$("list").onchange=function(e){
+  var id=+e.target.getAttribute("data-id");if(!id)return;
+  var x=exps.filter(function(v){return v.id===id})[0];if(!x)return;
+  x.cat=e.target.value;extra.push([x.text,x.cat]);
+  sv("nb_exp",exps);sv("nb_extra",extra);retrain();renderKpi();renderSum();renderData();
+};
+$("list").onclick=function(e){
+  var id=+e.target.getAttribute("data-del");if(!id)return;
+  exps=exps.filter(function(v){return v.id!==id});sv("nb_exp",exps);renderKpi();renderSum();renderList();
+};
+$("dc").innerHTML=opts(CATS[0]);
+$("dadd").onclick=function(){
+  var t=$("dt").value.trim();if(!t)return;
+  extra.push([t,$("dc").value]);sv("nb_extra",extra);retrain();$("dt").value="";renderData();
+};
+$("reset").onclick=function(){
+  if(!confirm("Hapus semua catatan dan data latih tambahan?"))return;
+  extra=[];exps=[];last=null;sv("nb_extra",extra);sv("nb_exp",exps);retrain();renderAll();
+};
+$("tabs").onclick=function(e){
+  var t=e.target.getAttribute("data-t");if(!t)return;
+  ["catat","calc","eval","data"].forEach(function(s){$(s).hidden=s!==t});
+  Array.prototype.forEach.call($("tabs").children,function(b){b.className=b===e.target?"on":""});
+  if(t==="eval")renderEval();if(t==="calc")renderCalc();if(t==="data")renderData();
+};
+$("per").onchange=function(){renderSum();renderList()};
+setNow();
+renderAll();
+</script>
+</body>
+</html>
