@@ -167,7 +167,7 @@ code{background:var(--acbg);color:var(--ink);padding:2px 7px;border-radius:6px;d
 </div>
 <div class="kpis" id="kpi"></div>
 <div class="card" id="smc"><div class="ch"><h2>Ringkasan</h2><select id="per" aria-label="Periode" style="width:auto;min-height:38px;font-size:.88rem"><option value="all">Semua</option><option value="month">Bulan ini</option><option value="week">7 hari terakhir</option><option value="day">Hari ini</option></select></div><div id="sum"></div></div>
-<div class="card" id="lsc"><div class="ch"><h2>Daftar pengeluaran</h2></div><div id="list"></div><p class="hint">Kalau kategorinya salah, ganti lewat menu di bawah tiap catatan. Model langsung belajar dari koreksimu.</p></div>
+<div class="card" id="lsc"><div class="ch"><h2>Daftar pengeluaran</h2><button class="btn g" id="exportExcel" type="button">Ekspor Excel</button></div><div id="list"></div><p class="hint">Kalau kategorinya salah, ganti lewat menu di bawah tiap catatan. Model langsung belajar dari koreksimu.</p></div>
 </section>
 
 <section id="calc" hidden><div class="card" id="calcbox"></div></section>
@@ -184,6 +184,7 @@ code{background:var(--acbg);color:var(--ink);padding:2px 7px;border-radius:6px;d
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
 // Ganti dengan Project URL dan Publishable key dari Supabase.
 var db = supabase.createClient("https://hgjikkhzsnecvsbzmvxg.supabase.co", "sb_publishable_JHzumnBL6J-2Rwa1n20VTg_-dvIAesw");
@@ -392,6 +393,18 @@ async function loadExpenses(){
   if(error){toast("Gagal memuat riwayat: "+error.message,"err");renderAll();return;}
   exps=data.map(function(x){return{id:x.id,ts:new Date(x.occurred_at).getTime(),text:x.description,amt:Number(x.amount),cat:x.category,pm:x.payment_method,note:x.note};});renderAll();
 }
+function exportExpenses(){
+  if(!currentUser){toast("Masuk dulu untuk mengekspor data.","err");return;}
+  if(!exps.length){toast("Belum ada pengeluaran untuk diekspor.","err");return;}
+  if(typeof XLSX==="undefined"){toast("Fitur Excel gagal dimuat. Periksa koneksi internet lalu muat ulang halaman.","err");return;}
+  var rows=exps.map(function(e){return{"Tanggal":new Date(e.ts||e.id).toLocaleString("id-ID"),"Catatan":e.text,"Jumlah (Rp)":Number(e.amt)||0,"Kategori":e.cat,"Metode pembayaran":e.pm||"Tunai","Keterangan":e.note||""};});
+  var ws=XLSX.utils.json_to_sheet(rows);
+  ws["!cols"]=[{wch:22},{wch:34},{wch:16},{wch:22},{wch:22},{wch:34}];
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Pengeluaran");
+  XLSX.writeFile(wb,"catatan-pengeluaran-"+new Date().toISOString().slice(0,10)+".xlsx");
+}
+$("exportExcel").onclick=exportExpenses;
 function showApp(signedIn){$("authbox").hidden=signedIn;$("tabs").hidden=!signedIn;$("catat").hidden=!signedIn;$("userbar").hidden=!signedIn;$("who").textContent=currentUser?currentUser.email:"";if(!signedIn){["calc","eval","data"].forEach(function(id){$(id).hidden=true;});Array.prototype.forEach.call($("tabs").children,function(b,i){b.className=i?"":"on"});exps=[];renderAll();}}
 $("auth-signup").onclick=function(){var email=$("auth-email").value.trim(),password=$("auth-password").value;if(!email||!password){setMsg("Isi email dan kata sandi dulu.","err");return;}return authBusy(this,"Mendaftar…",async function(){var r=await db.auth.signUp({email:email,password:password});if(r.error)setMsg(idErr(r.error.message),"err");else setMsg("Cek email untuk konfirmasi, lalu masuk.","ok");});};
 $("auth-signin").onclick=function(){var email=$("auth-email").value.trim(),password=$("auth-password").value;if(!email||!password){setMsg("Isi email dan kata sandi dulu.","err");return;}return authBusy(this,"Memproses…",async function(){var r=await db.auth.signInWithPassword({email:email,password:password});if(r.error)setMsg(idErr(r.error.message),"err");else setMsg("Berhasil masuk.","ok");});};
