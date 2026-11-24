@@ -83,11 +83,18 @@ input[type=datetime-local]{font:inherit;font-size:.9rem;color:var(--ink);backgro
 <div class="w">
 <h1>Catat Duit</h1>
 <p class="mu" style="margin:0">Tulis pengeluaranmu seperti chat. Kategorinya ditebak otomatis dengan Naive Bayes.</p>
-<nav id="tabs">
+<section id="authbox" class="paper">
+<h2>Masuk ke Catat Duit</h2>
+<p class="mu">Daftar dengan email untuk menyimpan dan membuka riwayat pengeluaranmu.</p>
+<div class="row" style="flex-wrap:wrap"><input id="auth-email" type="email" placeholder="Email" autocomplete="email" aria-label="Email"><input id="auth-password" type="password" placeholder="Kata sandi" autocomplete="current-password" aria-label="Kata sandi"></div>
+<div class="row" style="margin-top:8px"><button class="btn" id="auth-signin">Masuk</button><button class="btn g" id="auth-signup">Daftar</button><button class="btn g" id="auth-signout" hidden>Keluar</button></div>
+<p id="auth-message" class="hint" aria-live="polite"></p>
+</section>
+<nav id="tabs" hidden>
 <button data-t="catat" class="on">Catat</button><button data-t="calc">Cara kerja</button><button data-t="eval">Evaluasi</button><button data-t="data">Data latih</button>
 </nav>
 
-<section id="catat">
+<section id="catat" hidden>
 <div class="paper">
 <div class="row"><input type="text" id="in" placeholder="nasi goreng 15rb" autocomplete="off" aria-label="Pengeluaran"><button class="btn" id="add">Catat</button></div>
 <div class="row meta"><input type="datetime-local" id="dtm" aria-label="Tanggal dan jam"><select id="pm" aria-label="Metode pembayaran"><option>Tunai</option><option>QRIS</option><option>Transfer</option><option>E-wallet</option><option>Debit</option><option>Paylater</option></select><input type="text" id="note" placeholder="Catatan (opsional)" autocomplete="off" aria-label="Catatan"></div>
@@ -111,7 +118,11 @@ input[type=datetime-local]{font:inherit;font-size:.9rem;color:var(--ink);backgro
 </section>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+// Ganti dengan Project URL dan Publishable key dari Supabase.
+var db = supabase.createClient("https://hgjikkhzsnecvsbzmvxg.supabase.co", "sb_publishable_JHzumnBL6J-2Rwa1n20VTg_-dvIAesw");
+var currentUser = null;
 var CATS=["Makan & Minum","Transport","Hiburan","Pendidikan","Belanja","Kesehatan","Tagihan","Sosial & Donasi","Elektronik","Game","Tugas & Proyek","Penampilan","Rumah Tangga","Olahraga & Hobi","Tabungan","Lainnya"];
 var CC=["#2e8b6f","#3b7dd8","#a35fd1","#d9822b","#c94f6d","#2b9fb3","#8a8f2a","#b8932a","#5b6ee1","#e8643c","#2f8f5b","#d0689a","#7d8a99","#c4a000","#00899a","#8e6c4a"];
 var BASE=[
@@ -226,7 +237,7 @@ var $=function(id){return document.getElementById(id)};
 function ld(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
-var extra=ld("nb_extra",[]),exps=ld("nb_exp",[]),M,last=null;
+var extra=ld("nb_extra",[]),exps=[],M,last=null;
 function all(){var e=[];extra.forEach(function(x){for(var k=0;k<5;k++)e.push(x)});return BASE.concat(AUG,e)}
 function retrain(){M=train(all())}
 retrain();
@@ -300,32 +311,31 @@ function dlabel(d){var n=new Date(),a=new Date(n.getFullYear(),n.getMonth(),n.ge
 function view(){var p=$('per').value,n=new Date(),s=0;if(p==='day')s=new Date(n.getFullYear(),n.getMonth(),n.getDate()).getTime();if(p==='week')s=new Date(n.getFullYear(),n.getMonth(),n.getDate()-6).getTime();if(p==='month')s=new Date(n.getFullYear(),n.getMonth(),1).getTime();return exps.filter(function(e){return(e.ts||e.id)>=s}).sort(function(a,b){return(b.ts||b.id)-(a.ts||a.id)})}
 function kp(l,v){return'<div><small>'+l+'</small><b>'+v+'</b></div>'}
 function renderKpi(){var n=new Date(),d0=new Date(n.getFullYear(),n.getMonth(),n.getDate()).getTime(),m0=new Date(n.getFullYear(),n.getMonth(),1).getTime(),a=0,b=0,t={};exps.forEach(function(e){var s=e.ts||e.id;if(s>=d0)a+=e.amt;if(s>=m0){b+=e.amt;t[e.cat]=(t[e.cat]||0)+e.amt}});var tc=Object.keys(t).sort(function(x,y){return t[y]-t[x]})[0];$('kpi').innerHTML=kp('Hari ini',rp(a))+kp('Bulan ini',rp(b))+kp('Terbesar bulan ini',tc||'-')}
-function addExp(){
-  var t=$("in").value.trim();if(!t)return;
-  var r=score(M,t);
-  exps.unshift({id:Date.now(),ts:ts(),text:t,amt:amount(t),cat:CATS[best(r)],pm:$("pm").value,note:$("note").value.trim()});
-  last={t:t,r:r};sv("nb_exp",exps);$("in").value="";$("note").value="";setNow();renderAll();$("in").focus();
+async function loadExpenses(){
+  if(!currentUser)return;
+  var {data,error}=await db.from("expenses").select("id,occurred_at,description,amount,category,payment_method,note").order("occurred_at",{ascending:false});
+  if(error){alert("Gagal memuat riwayat: "+error.message);return;}
+  exps=data.map(function(x){return{id:x.id,ts:new Date(x.occurred_at).getTime(),text:x.description,amt:Number(x.amount),cat:x.category,pm:x.payment_method,note:x.note};});renderAll();
 }
+function showApp(signedIn){$("authbox").hidden=signedIn;$("tabs").hidden=!signedIn;$("catat").hidden=!signedIn;$("auth-signout").hidden=!signedIn;if(!signedIn){["calc","eval","data"].forEach(function(id){$(id).hidden=true;});exps=[];renderAll();}}
+$("auth-signup").onclick=async function(){var email=$("auth-email").value.trim(),password=$("auth-password").value;if(!email||!password){$("auth-message").textContent="Isi email dan kata sandi dulu.";return;}var {error}=await db.auth.signUp({email:email,password:password});$("auth-message").textContent=error?error.message:"Cek email untuk konfirmasi, lalu masuk.";};
+$("auth-signin").onclick=async function(){var {error}=await db.auth.signInWithPassword({email:$("auth-email").value.trim(),password:$("auth-password").value});$("auth-message").textContent=error?error.message:"Berhasil masuk.";};
+$("auth-signout").onclick=async function(){await db.auth.signOut();};
+db.auth.onAuthStateChange(function(_event,session){currentUser=session?session.user:null;showApp(!!currentUser);if(currentUser)loadExpenses();});
+async function addExp(){var t=$("in").value.trim();if(!t||!currentUser)return;var r=score(M,t);var {error}=await db.from("expenses").insert({user_id:currentUser.id,occurred_at:new Date(ts()).toISOString(),description:t,amount:amount(t),category:CATS[best(r)],payment_method:$("pm").value,note:$("note").value.trim()});if(error){alert("Gagal menyimpan: "+error.message);return;}last={t:t,r:r};$("in").value="";$("note").value="";setNow();await loadExpenses();$("in").focus();}
 $("add").onclick=addExp;
 $("in").onkeydown=function(e){if(e.key==="Enter")addExp()};
-$("list").onchange=function(e){
-  var id=+e.target.getAttribute("data-id");if(!id)return;
-  var x=exps.filter(function(v){return v.id===id})[0];if(!x)return;
-  x.cat=e.target.value;extra.push([x.text,x.cat]);
-  sv("nb_exp",exps);sv("nb_extra",extra);retrain();renderKpi();renderSum();renderData();
-};
-$("list").onclick=function(e){
-  var id=+e.target.getAttribute("data-del");if(!id)return;
-  exps=exps.filter(function(v){return v.id!==id});sv("nb_exp",exps);renderKpi();renderSum();renderList();
-};
+$("list").onchange=async function(e){var id=Number(e.target.getAttribute("data-id"));if(!id||!currentUser)return;var x=exps.find(function(v){return v.id===id;});if(!x)return;var old=x.cat,{error}=await db.from("expenses").update({category:e.target.value}).eq("id",id);if(error){alert("Gagal mengubah kategori: "+error.message);e.target.value=old;return;}x.cat=e.target.value;extra.push([x.text,x.cat]);sv("nb_extra",extra);retrain();renderKpi();renderSum();renderData();};
+$("list").onclick=async function(e){var id=Number(e.target.getAttribute("data-del"));if(!id||!currentUser)return;var {error}=await db.from("expenses").delete().eq("id",id);if(error){alert("Gagal menghapus: "+error.message);return;}exps=exps.filter(function(v){return v.id!==id;});renderKpi();renderSum();renderList();};
 $("dc").innerHTML=opts(CATS[0]);
 $("dadd").onclick=function(){
   var t=$("dt").value.trim();if(!t)return;
   extra.push([t,$("dc").value]);sv("nb_extra",extra);retrain();$("dt").value="";renderData();
 };
-$("reset").onclick=function(){
-  if(!confirm("Hapus semua catatan dan data latih tambahan?"))return;
-  extra=[];exps=[];last=null;sv("nb_extra",extra);sv("nb_exp",exps);retrain();renderAll();
+$("reset").onclick=async function(){
+  if(!currentUser||!confirm("Hapus semua catatan akun ini dan data latih tambahan di browser ini?"))return;
+  var {error}=await db.from("expenses").delete().eq("user_id",currentUser.id);if(error){alert("Gagal menghapus: "+error.message);return;}
+  extra=[];exps=[];last=null;sv("nb_extra",extra);retrain();renderAll();
 };
 $("tabs").onclick=function(e){
   var t=e.target.getAttribute("data-t");if(!t)return;
@@ -336,6 +346,7 @@ $("tabs").onclick=function(e){
 $("per").onchange=function(){renderSum();renderList()};
 setNow();
 renderAll();
+db.auth.getSession().then(function(result){currentUser=result.data.session?result.data.session.user:null;showApp(!!currentUser);if(currentUser)loadExpenses();});
 </script>
 </body>
 </html>
